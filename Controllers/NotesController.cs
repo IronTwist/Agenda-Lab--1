@@ -21,11 +21,23 @@ namespace Agenda.Controllers
             _context = context;
         }
 
+        [HttpGet]
+        [Route("filter/{date}")]
+        public ActionResult<IEnumerable<Note>> filterNoteByDate(DateTime date)
+        {
+            return _context.Notes.Where(note => note.Data == date).ToList();
+        }
+
         // GET: api/Notes
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Note>>> GetNotes()
+        public async Task<ActionResult<IEnumerable<Note>>> GetNotes(string? name)
         {
-            return await _context.Notes.ToListAsync();
+            if(name == null)
+            {
+                return await _context.Notes.ToListAsync();
+            }
+
+            return await _context.Notes.Where(note => note.Name == name).ToListAsync();
         }
 
         // GET: api/Notes/5
@@ -53,7 +65,7 @@ namespace Agenda.Controllers
             }
 
             _context.Entry(note).State = EntityState.Modified;
-
+            
             try
             {
                 await _context.SaveChangesAsync();
@@ -70,7 +82,7 @@ namespace Agenda.Controllers
                 }
             }
 
-            return NoContent();
+            return CreatedAtAction("GetNote", new { id = note.Id }, note);
         }
 
         // POST: api/Notes
